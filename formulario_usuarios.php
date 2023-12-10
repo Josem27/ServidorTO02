@@ -1,7 +1,7 @@
 <?php
 session_start();
 
-require_once 'conexion.php';
+require_once 'config.php';
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $nombre = $_POST["txtnombre"];
@@ -35,7 +35,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <div class="row justify-content-center">
             <div class="col-md-6">
                 <h2 class="text-center mb-4">Registro de Usuario</h2>
-                <form method="post" action="">
+                <form method="post" action="" enctype="multipart/form-data">
                     <div class="form-group">
                         <label for="txtnombre">Nombre:</label>
                         <input type="text" id="txtnombre" name="txtnombre" class="form-control" required>

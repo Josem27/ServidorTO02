@@ -1,20 +1,42 @@
 <?php
 session_start();
 
-require_once 'conexion.php';
+// Verificar si el usuario está autenticado
+if (!isset($_SESSION["ID"])) {
+    header("Location: login.php");
+    exit();
+}
+
+require_once 'config.php';
+
+$dbh = include 'config.php';
+
+if ($dbh === null) {
+    die("Error: La conexión a la base de datos es nula.");
+}
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $titulo = $_POST["txttitulo"];
     $contenido = $_POST["txtcontenido"];
-    $autor_id = $_POST["txtautor_id"];
-    $categoria_id = $_POST["txtcategoria_id"];
+    $categoriaId = $_POST["categoria"];
+    
+    // Obtener el ID del usuario actualmente logueado
+    $idUsuario = $_SESSION["id"];
+
+    // Obtener la imagen
+    $imagen = $_FILES["imagen"]["name"];
+    $imagen_temporal = $_FILES["imagen"]["tmp_name"];
+    $ruta = "uploads/" . $imagen;
+
+    // Mover la imagen a la carpeta de uploads
+    move_uploaded_file($imagen_temporal, $ruta);
 
     // Realiza el registro de la entrada
     try {
-        $stmt = $dbh->prepare("INSERT INTO Entradas (tituloEntrada, contenidoEntrada, idUsuario, idCategoria) VALUES (?, ?, ?, ?)");
-        $stmt->execute([$titulo, $contenido, $autor_id, $categoria_id]);
+        $stmt = $dbh->prepare("INSERT INTO entradas (CATEGORIA_ID, TITULO, IMAGEN, DESCRIPCION, USUARIO_ID, FECHA) VALUES (?, ?, ?, ?, ?, NOW())");
+        $stmt->execute([$categoriaId, $titulo, $ruta, $contenido, $idUsuario]);
 
-        header("Location: dashboard.php");
+        header("Location: index.php");
         exit();
     } catch (PDOException $ex) {
         $error = "Error al registrar la entrada: " . $ex->getMessage();
@@ -35,25 +57,30 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <div class="row justify-content-center">
             <div class="col-md-6">
                 <h2 class="text-center mb-4">Registro de Entrada</h2>
-                <form method="post" action="">
+                <form method="post" action="" enctype="multipart/form-data">
+                    <div class="form-group">
+                        <label for="categoria">Categoría:</label>
+                        <select id="categoria" name="categoria" class="form-control" required>
+                            <!-- Aquí puedes cargar dinámicamente las categorías desde tu base de datos si es necesario -->
+                            <option value="1">Categoría 1</option>
+                            <option value="2">Categoría 2</option>
+                            <!-- Agrega más opciones según sea necesario -->
+                        </select>
+                    </div>
+
                     <div class="form-group">
                         <label for="txttitulo">Título:</label>
                         <input type="text" id="txttitulo" name="txttitulo" class="form-control" required>
                     </div>
 
                     <div class="form-group">
-                        <label for="txtcontenido">Contenido:</label>
+                        <label for="imagen">Imagen:</label>
+                        <input type="file" id="imagen" name="imagen" class="form-control-file" accept="image/*">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="txtcontenido">Descripción:</label>
                         <textarea id="txtcontenido" name="txtcontenido" class="form-control" required></textarea>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="txtautor_id">ID del Autor:</label>
-                        <input type="number" id="txtautor_id" name="txtautor_id" class="form-control" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="txtcategoria_id">ID de Categoría:</label>
-                        <input type="number" id="txtcategoria_id" name="txtcategoria_id" class="form-control" required>
                     </div>
 
                     <button type="submit" class="btn btn-primary btn-block">Registrar Entrada</button>

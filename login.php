@@ -2,18 +2,25 @@
 session_start();
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $username = $_POST["username"];
-    $password = $_POST["password"];
+    $NICK = $_POST["Nick"];
+    $PASSWORD = $_POST["$PASSWORD"];
 
     // Realiza la autenticación (en un entorno real, utiliza funciones de hash y verifica la contraseña correctamente)
-    require_once 'conexion.php';
-    $stmt = $dbh->prepare("SELECT * FROM Usuarios WHERE nombreUsuario = ?");
-    $stmt->execute([$username]);
+    require_once 'config.php';
+
+    $dbh = include 'config.php';
+
+    if ($dbh === null) {
+        die("Error: La conexión a la base de datos es nula.");
+    }
+
+    $stmt = $dbh->prepare("SELECT * FROM usuarios WHERE NICK = ?");
+    $stmt->execute([$NICK]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    if ($user && password_verify($password, $user['contrasenaUsuario'])) {
-        $_SESSION["idUsuario"] = $user['idUsuario'];
-        header("Location: dashboard.php");
+    if ($user && $PASSWORD === $user['$PASSWORD']) {
+        $_SESSION["ID"] = $user['ID'];
+        header("Location: index.php");
         exit();
     } else {
         $error = "Credenciales incorrectas";
@@ -36,13 +43,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <h2 class="text-center mb-4">Iniciar sesión</h2>
                 <form method="post" action="">
                     <div class="form-group">
-                        <label for="username">Usuario:</label>
-                        <input type="text" id="username" name="username" class="form-control" required>
+                        <label for="Nick">Usuario:</label>
+                        <input type="text" id="Nick" name="Nick" class="form-control" required>
                     </div>
 
                     <div class="form-group">
-                        <label for="password">Contraseña:</label>
-                        <input type="password" id="password" name="password" class="form-control" required>
+                        <label for="$PASSWORD">Contraseña:</label>
+                        <input type="password" id="$PASSWORD" name="$PASSWORD" class="form-control" required>
                     </div>
 
                     <button type="submit" class="btn btn-primary btn-block">Iniciar sesión</button>
@@ -66,4 +73,3 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 </html>
-

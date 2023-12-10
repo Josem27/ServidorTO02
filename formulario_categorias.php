@@ -1,7 +1,7 @@
 <?php
 session_start();
 
-require_once 'conexion.php';
+require_once 'config.php';
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $nombreCategoria = $_POST["txtnombreCategoria"];
@@ -11,7 +11,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $stmt = $dbh->prepare("INSERT INTO Categorias (nombreCategoria) VALUES (?)");
         $stmt->execute([$nombreCategoria]);
 
-        header("Location: dashboard.php");
+        header("Location: index.php");
         exit();
     } catch (PDOException $ex) {
         $error = "Error al registrar la categoría: " . $ex->getMessage();
