@@ -14,14 +14,28 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     // Realiza el registro de la categoría
     try {
-        $stmt = $dbh->prepare("INSERT INTO Categorias (NOMBRE) VALUES (?)");
+        $stmt = $dbh->prepare("INSERT INTO categorias (NOMBRE) VALUES (?)");
         $stmt->execute([$nombreCategoria]);
-
+    
+        // Obtener el nombre de usuario
+        $stmtUsuario = $dbh->prepare("SELECT NICK FROM usuarios WHERE ID = ?");
+        $stmtUsuario->execute([$_SESSION["ID"]]);
+        $nombreUsuario = $stmtUsuario->fetchColumn();
+    
+        // Obtener el ID de la categoría recién creada
+        $idCategoria = $dbh->lastInsertId();
+    
+        // Registrar el log con el ID de la categoría
+        $stmtLog = $dbh->prepare("INSERT INTO logs (fecha, hora, usuario, tipo_operacion) VALUES (CURDATE(), CURTIME(), ?, 'Registro de categoría (ID: $idCategoria)')");
+        $stmtLog->execute([$nombreUsuario]);
+    
         header("Location: index.php");
         exit();
     } catch (PDOException $ex) {
         $error = "Error al registrar la categoría: " . $ex->getMessage();
     }
+    
+    
 }
 ?>
 

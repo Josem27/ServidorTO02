@@ -1,12 +1,6 @@
 <?php
 session_start();
 
-// Verificar si el usuario está autenticado
-if (!isset($_SESSION["ID"])) {
-    header("Location: login.php");
-    exit();
-}
-
 require_once 'config.php';
 
 $dbh = include 'config.php';
@@ -37,6 +31,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     try {
         $stmt = $dbh->prepare("INSERT INTO entradas (CATEGORIA_ID, TITULO, IMAGEN, DESCRIPCION, USUARIO_ID, FECHA) VALUES (?, ?, ?, ?, ?, NOW())");
         $stmt->execute([$categoriaId, $titulo, $ruta, $contenido, $idUsuario]);
+
+        // Obtener el ID de la entrada recién añadida
+        $idEntrada = $dbh->lastInsertId();
+
+        // Obtener el nombre de usuario
+        $stmtUsuario = $dbh->prepare("SELECT NICK FROM usuarios WHERE ID = ?");
+        $stmtUsuario->execute([$idUsuario]);
+        $nombreUsuario = $stmtUsuario->fetchColumn();
+
+        // Registrar el log con el ID de la entrada
+        $stmtLog = $dbh->prepare("INSERT INTO logs (fecha, hora, usuario, tipo_operacion) VALUES (CURDATE(), CURTIME(), ?, 'Registro de entrada (ID: $idEntrada)')");
+        $stmtLog->execute([$nombreUsuario]);
 
         header("Location: index.php");
         exit();

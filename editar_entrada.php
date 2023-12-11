@@ -37,6 +37,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $stmtImagen->execute([$ruta, $idEntrada]);
     }
 
+    // Obtener el nombre de usuario
+    $stmtUsuario = $dbh->prepare("SELECT NICK FROM usuarios WHERE ID = ?");
+    $stmtUsuario->execute([$_SESSION["ID"]]);
+    $nombreUsuario = $stmtUsuario->fetchColumn();
+
+    // Registrar el log con el ID de la entrada
+    $stmtLog = $dbh->prepare("INSERT INTO logs (fecha, hora, usuario, tipo_operacion) VALUES (CURDATE(), CURTIME(), ?, 'Actualización de entrada (ID: $idEntrada)')");
+    $stmtLog->execute([$nombreUsuario]);
+
     header("Location: listado_entradas.php");
 } else {
     $idEntrada = $_GET['id'];

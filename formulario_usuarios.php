@@ -30,6 +30,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $stmt = $dbh->prepare("INSERT INTO usuarios (NICK, NOMBRE, APELLIDOS, EMAIL, PASSWORD, IMAGEN_AVATAR, tipo) VALUES (?, ?, ?, ?, ?, ?, ?)");
         $stmt->execute([$nick, $nombre, $apellidos, $email, $password, $ruta, $tipo]);
 
+        // Obtener el ID del usuario recién registrado
+        $idUsuario = $dbh->lastInsertId();
+
+        // Obtener el nombre de usuario
+        $stmtUsuario = $dbh->prepare("SELECT NICK FROM usuarios WHERE ID = ?");
+        $stmtUsuario->execute([$idUsuario]);
+        $nombreUsuario = $stmtUsuario->fetchColumn();
+
+        // Registrar el log con el ID del usuario
+        $stmtLog = $dbh->prepare("INSERT INTO logs (fecha, hora, usuario, tipo_operacion) VALUES (CURDATE(), CURTIME(), ?, 'Registro de usuario (ID: $idUsuario)')");
+        $stmtLog->execute([$nombreUsuario]);
+
         header("Location: index.php");
         exit();
     } catch (PDOException $ex) {

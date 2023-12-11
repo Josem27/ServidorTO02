@@ -46,6 +46,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $stmt = $dbh->prepare("UPDATE usuarios SET NICK = ?, NOMBRE = ?, APELLIDOS = ?, EMAIL = ?, PASSWORD = ?, IMAGEN_AVATAR = ? WHERE ID = ?");
     $stmt->execute([$nuevoNick, $nuevoNombre, $nuevoApellido, $nuevoEmail, $nuevoPassword, $rutaFoto, $idUsuario]);
 
+    // Obtener el nombre de usuario
+    $stmtUsuario = $dbh->prepare("SELECT NICK FROM usuarios WHERE ID = ?");
+    $stmtUsuario->execute([$_SESSION["ID"]]);
+    $nombreUsuario = $stmtUsuario->fetchColumn();
+
+    // Registrar el log con el ID del usuario
+    $stmtLog = $dbh->prepare("INSERT INTO logs (fecha, hora, usuario, tipo_operacion) VALUES (CURDATE(), CURTIME(), ?, 'Edición de usuario (ID: $idUsuario)')");
+    $stmtLog->execute([$nombreUsuario]);
+
     header("Location: listado_usuarios.php");
 } else {
     // Obtener el usuario a editar
