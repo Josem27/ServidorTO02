@@ -15,19 +15,22 @@ if ($dbh === null) {
     die("Error: La conexión a la base de datos es nula.");
 }
 
+// Obtener la lista de categorías desde la base de datos
+$stmtCategorias = $dbh->query("SELECT * FROM categorias");
+$categorias = $stmtCategorias->fetchAll(PDO::FETCH_ASSOC);
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // Obtener el ID del usuario actualmente logueado
-    $idUsuario = $_SESSION["ID"];
+    $idUsuario = $_SESSION["ID"];     // Obtener el ID del usuario actualmente logueado
     $titulo = $_POST["txttitulo"];
     $contenido = $_POST["txtcontenido"];
     $categoriaId = $_POST["categoria"];
-    
-        // Obtener la imagen
+
+    // Obtener la imagen
     $imagen = $_FILES["imagen"]["name"];
     $imagen_temporal = $_FILES["imagen"]["tmp_name"];
-    $ruta = "uploads/" . $imagen;
+    $ruta = "images/" . $imagen;
 
-    // Mover la imagen a la carpeta de uploads
+    // Mover la imagen a la carpeta de images
     move_uploaded_file($imagen_temporal, $ruta);
 
     // Realiza el registro de la entrada
@@ -60,10 +63,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     <div class="form-group">
                         <label for="categoria">Categoría:</label>
                         <select id="categoria" name="categoria" class="form-control" required>
-                            <!-- Aquí puedes cargar dinámicamente las categorías desde tu base de datos si es necesario -->
-                            <option value="1">Categoría 1</option>
-                            <option value="2">Categoría 2</option>
-                            <!-- Agrega más opciones según sea necesario -->
+                            <?php foreach ($categorias as $categoria) { ?>
+                                <option value="<?php echo $categoria['ID']; ?>"><?php echo $categoria['NOMBRE']; ?></option>
+                            <?php } ?>
                         </select>
                     </div>
 

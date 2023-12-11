@@ -16,7 +16,11 @@ if ($dbh === null) {
 }
 
 // Obtener la lista de todas las entradas ordenadas por fecha de creación (más reciente a menos reciente)
-$stmt = $dbh->query("SELECT * FROM entradas ORDER BY FECHA DESC");
+$stmt = $dbh->query("SELECT entradas.*, categorias.NOMBRE AS NOMBRE_CATEGORIA, usuarios.NICK AS NICK_USUARIO
+                    FROM entradas
+                    LEFT JOIN categorias ON entradas.CATEGORIA_ID = categorias.ID
+                    LEFT JOIN usuarios ON entradas.USUARIO_ID = usuarios.ID
+                    ORDER BY entradas.FECHA DESC");
 $entradas = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
@@ -36,6 +40,8 @@ $entradas = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 <tr>
                     <th>Título</th>
                     <th>Contenido</th>
+                    <th>Categoría</th>
+                    <th>Autor</th>
                     <th>Fecha de Creación</th>
                     <th>Operaciones</th>
                 </tr>
@@ -45,6 +51,8 @@ $entradas = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     <tr>
                         <td><?php echo $entrada['TITULO']; ?></td>
                         <td><?php echo $entrada['DESCRIPCION']; ?></td>
+                        <td><?php echo $entrada['NOMBRE_CATEGORIA']; ?></td>
+                        <td><?php echo $entrada['NICK_USUARIO']; ?></td>
                         <td><?php echo $entrada['FECHA']; ?></td>
                         <td>
                             <a href="editar_entrada.php?id=<?php echo $entrada['ID']; ?>">Editar</a> |

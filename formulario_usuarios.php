@@ -20,7 +20,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Obtener la imagen
     $imagen = $_FILES["imagen"]["name"];
     $imagen_temporal = $_FILES["imagen"]["tmp_name"];
-    $ruta = "uploads/" . $imagen;
+    $ruta = "images/" . $imagen;
 
     // Mover la imagen a la carpeta de uploads
     move_uploaded_file($imagen_temporal, $ruta);

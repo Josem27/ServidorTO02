@@ -45,16 +45,21 @@ if (!$usuario) {
         <h2 class="text-center mb-4">Detalles de Usuario</h2>
 
         <div class="card">
-            <div class="card-body">
-                <p class="card-text"><strong>Nick:</strong> <?php echo $usuario['NICK']; ?></p>
-                <p class="card-text"><strong>Nombre:</strong> <?php echo $usuario['NOMBRE']; ?></p>
-                <p class="card-text"><strong>Apellidos:</strong> <?php echo $usuario['APELLIDOS']; ?></p>
-                <p class="card-text"><strong>Email:</strong> <?php echo $usuario['EMAIL']; ?></p>
-                <p class="card-text"><strong>Tipo:</strong> <?php echo $usuario['tipo']; ?></p>
-                <!-- Agrega más detalles según sea necesario -->
-
-                <!-- Puedes incluir detalles adicionales del usuario aquí -->
-
+            <div class="row no-gutters">
+                <div class="col-md-8">
+                    <div class="card-body">
+                        <p class="card-text"><strong>Nick:</strong> <?php echo $usuario['NICK']; ?></p>
+                        <p class="card-text"><strong>Nombre:</strong> <?php echo $usuario['NOMBRE']; ?></p>
+                        <p class="card-text"><strong>Apellidos:</strong> <?php echo $usuario['APELLIDOS']; ?></p>
+                        <p class="card-text"><strong>Email:</strong> <?php echo $usuario['EMAIL']; ?></p>
+                        <p class="card-text"><strong>Tipo:</strong> <?php echo $usuario['tipo']; ?></p>
+                    </div>
+                </div>
+                <div class="col-md-4 d-flex align-items-center justify-content-center">
+                    <?php if ($usuario['IMAGEN_AVATAR'] != null) { ?>
+                        <img src="<?php echo $usuario['IMAGEN_AVATAR']; ?>" class="card-img" style="max-width: 50%;" alt="Foto de perfil">
+                    <?php } ?>
+                </div>
             </div>
         </div>
 

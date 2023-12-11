@@ -16,14 +16,26 @@ if ($dbh === null) {
 }
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // Procesar la actualización de la entrada en la base de datos
     $idEntrada = $_POST['idEntrada'];
     $nuevoTitulo = $_POST['nuevoTitulo'];
     $nuevoContenido = $_POST['nuevoContenido'];
+    $nuevaCategoria = $_POST['nuevaCategoria'];
 
-    // Realizar la actualización en la base de datos
-    $stmt = $dbh->prepare("UPDATE entradas SET TITULO = ?, DESCRIPCION = ? WHERE ID = ?");
-    $stmt->execute([$nuevoTitulo, $nuevoContenido, $idEntrada]);
+    // Procesar la actualización de la entrada en la base de datos
+    $stmt = $dbh->prepare("UPDATE entradas SET TITULO = ?, DESCRIPCION = ?, CATEGORIA_ID = ? WHERE ID = ?");
+    $stmt->execute([$nuevoTitulo, $nuevoContenido, $nuevaCategoria, $idEntrada]);
+
+    // Actualizar la imagen si se proporciona una nueva
+    if ($_FILES["nuevaImagen"]["size"] > 0) {
+        $imagen = $_FILES["nuevaImagen"]["name"];
+        $imagen_temporal = $_FILES["nuevaImagen"]["tmp_name"];
+        $ruta = "uploads/" . $imagen;
+        move_uploaded_file($imagen_temporal, $ruta);
+
+        // Actualizar la ruta de la imagen en la base de datos
+        $stmtImagen = $dbh->prepare("UPDATE entradas SET IMAGEN = ? WHERE ID = ?");
+        $stmtImagen->execute([$ruta, $idEntrada]);
+    }
 
     header("Location: listado_entradas.php");
     // No es necesario exit() aquí
@@ -33,6 +45,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $stmt = $dbh->prepare("SELECT * FROM entradas WHERE ID = ?");
     $stmt->execute([$idEntrada]);
     $entrada = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    // Obtener la lista de categorías
+    $stmtCategorias = $dbh->query("SELECT * FROM categorias");
+    $categorias = $stmtCategorias->fetchAll(PDO::FETCH_ASSOC);
 }
 ?>
 
@@ -46,7 +62,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <body>
     <div class="container mt-5">
         <h2 class="text-center mb-4">Editar Entrada</h2>
-        <form method="post" action="">
+        <form method="post" action="" enctype="multipart/form-data">
             <input type="hidden" name="idEntrada" value="<?php echo $entrada['ID']; ?>">
             <div class="form-group">
                 <label for="nuevoTitulo">Título:</label>
@@ -55,6 +71,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <div class="form-group">
                 <label for="nuevoContenido">Descripción:</label>
                 <textarea id="nuevoContenido" name="nuevoContenido" class="form-control" required><?php echo $entrada['DESCRIPCION']; ?></textarea>
+            </div>
+            <div class="form-group">
+                <label for="nuevaCategoria">Categoría:</label>
+                <select id="nuevaCategoria" name="nuevaCategoria" class="form-control" required>
+                    <?php foreach ($categorias as $categoria) { ?>
+                        <option value="<?php echo $categoria['ID']; ?>" <?php if ($categoria['ID'] == $entrada['CATEGORIA_ID']) echo 'selected'; ?>><?php echo $categoria['NOMBRE']; ?></option>
+                    <?php } ?>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="nuevaImagen">Nueva Imagen:</label>
+                <input type="file" id="nuevaImagen" name="nuevaImagen" class="form-control-file" accept="image/*">
             </div>
             <button type="submit" class="btn btn-primary">Guardar cambios</button>
         </form>

@@ -26,6 +26,16 @@ $stmt = $dbh->prepare("SELECT * FROM entradas WHERE ID = ?");
 $stmt->execute([$idEntrada]);
 $entrada = $stmt->fetch(PDO::FETCH_ASSOC);
 
+// Obtener el nick del autor
+$stmtUsuario = $dbh->prepare("SELECT NICK FROM usuarios WHERE ID = ?");
+$stmtUsuario->execute([$entrada['USUARIO_ID']]);
+$autor = $stmtUsuario->fetchColumn();
+
+// Obtener el nombre de la categoría
+$stmtCategoria = $dbh->prepare("SELECT NOMBRE FROM categorias WHERE ID = ?");
+$stmtCategoria->execute([$entrada['CATEGORIA_ID']]);
+$categoria = $stmtCategoria->fetchColumn();
+
 // Verificar si la entrada existe
 if (!$entrada) {
     header("Location: listado_entradas.php");
@@ -45,9 +55,14 @@ if (!$entrada) {
         <h2 class="text-center mb-4">Detalles de Entrada</h2>
 
         <div class="card">
+            <?php if ($entrada['IMAGEN'] != null) { ?>
+                <img src="<?php echo $entrada['IMAGEN']; ?>" class="card-img-top img-fluid" alt="Imagen de la entrada">
+            <?php } ?>
             <div class="card-body">
                 <h5 class="card-title"><?php echo $entrada['TITULO']; ?></h5>
                 <p class="card-text"><?php echo $entrada['DESCRIPCION']; ?></p>
+                <p class="card-text"><strong>Autor:</strong> <?php echo $autor; ?></p>
+                <p class="card-text"><strong>Categoría:</strong> <?php echo $categoria; ?></p>
                 <p class="card-text"><strong>Fecha de Creación:</strong> <?php echo $entrada['FECHA']; ?></p>
             </div>
         </div>
