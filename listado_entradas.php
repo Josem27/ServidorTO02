@@ -15,28 +15,44 @@ if ($dbh === null) {
     die("Error: La conexión a la base de datos es nula.");
 }
 
+// Configuración de la paginación
+$registrosPorPagina = 5; // Número de registros por página
+$paginaActual = isset($_GET['pagina']) ? (int)$_GET['pagina'] : 1;
+$offset = ($paginaActual - 1) * $registrosPorPagina;
+
 // Obtener el tipo de usuario actual
 $idUsuario = $_SESSION["ID"];
 $stmtTipoUsuario = $dbh->prepare("SELECT tipo FROM usuarios WHERE ID = ?");
 $stmtTipoUsuario->execute([$idUsuario]);
 $tipoUsuario = $stmtTipoUsuario->fetchColumn();
 
-// Obtener la lista de entradas
-$stmt = $dbh->query("SELECT entradas.*, categorias.NOMBRE AS NOMBRE_CATEGORIA, usuarios.NICK AS NICK_USUARIO
+// Obtener el total de entradas
+$stmtTotalEntradas = $dbh->query("SELECT COUNT(*) FROM entradas");
+$totalEntradas = $stmtTotalEntradas->fetchColumn();
+
+// Obtener la lista de entradas paginada
+$stmtEntradas = $dbh->prepare("SELECT entradas.*, categorias.NOMBRE AS NOMBRE_CATEGORIA, usuarios.NICK AS NICK_USUARIO
                     FROM entradas
                     LEFT JOIN categorias ON entradas.CATEGORIA_ID = categorias.ID
                     LEFT JOIN usuarios ON entradas.USUARIO_ID = usuarios.ID
-                    ORDER BY entradas.FECHA DESC");
-$entradas = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                    ORDER BY entradas.FECHA DESC
+                    LIMIT $offset, $registrosPorPagina");
+$stmtEntradas->execute();
+$entradas = $stmtEntradas->fetchAll(PDO::FETCH_ASSOC);
+
+// Calcular el número total de páginas
+$totalPaginas = ceil($totalEntradas / $registrosPorPagina);
 ?>
 
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <title>Listado de Entradas</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 </head>
+
 <body>
     <div class="container mt-5">
         <h2 class="text-center mb-4">Listado de Entradas</h2>
@@ -55,8 +71,18 @@ $entradas = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <tbody>
                 <?php foreach ($entradas as $entrada) { ?>
                     <tr>
-                        <td><?php echo $entrada['TITULO']; ?></td>
-                        <td><?php echo $entrada['DESCRIPCION']; ?></td>
+                        <td>
+                            <?php
+                            $titulo = $entrada['TITULO'];
+                            echo strlen($titulo) > 20 ? substr($titulo, 0, 20) . '...' : $titulo;
+                            ?>
+                        </td>
+                        <td>
+                            <?php
+                            $contenido = $entrada['DESCRIPCION'];
+                            echo strlen($contenido) > 50 ? substr($contenido, 0, 50) . '...' : $contenido;
+                            ?>
+                        </td>
                         <td><?php echo $entrada['NOMBRE_CATEGORIA']; ?></td>
                         <td><?php echo $entrada['NICK_USUARIO']; ?></td>
                         <td><?php echo $entrada['FECHA']; ?></td>
@@ -72,6 +98,25 @@ $entradas = $stmt->fetchAll(PDO::FETCH_ASSOC);
             </tbody>
         </table>
 
+        <!-- Paginación -->
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center">
+                <?php for ($i = 1; $i <= $totalPaginas; $i++) { ?>
+                    <li class="page-item <?php echo ($i == $paginaActual) ? 'active' : ''; ?>">
+                        <a class="page-link" href="?pagina=<?php echo $i; ?>"><?php echo $i; ?></a>
+                    </li>
+                <?php } ?>
+            </ul>
+        </nav>
+
+        <!-- Ir a página específica -->
+        <form class="form-inline float-right" action="" method="get">
+            <label class="mr-2" for="irAPagina">Ir a página:</label>
+            <input type="number" class="form-control mr-2" id="irAPagina" name="pagina" min="1" max="<?php echo $totalPaginas; ?>" value="<?php echo $paginaActual; ?>">
+            <button type="submit" class="btn btn-primary">Ir</button>
+        </form>
+
+
         <a href="index.php" class="btn btn-secondary mt-3">Inicio</a>
     </div>
 
@@ -79,4 +124,5 @@ $entradas = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
+
 </html>

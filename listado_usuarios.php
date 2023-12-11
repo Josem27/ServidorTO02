@@ -15,15 +15,28 @@ if ($dbh === null) {
     die("Error: La conexión a la base de datos es nula.");
 }
 
+// Configuración de la paginación
+$registrosPorPagina = 5; // Número de registros por página
+$paginaActual = isset($_GET['pagina']) ? (int)$_GET['pagina'] : 1;
+$offset = ($paginaActual - 1) * $registrosPorPagina;
+
 // Obtener el tipo de usuario actual
 $idUsuario = $_SESSION["ID"];
 $stmtTipoUsuario = $dbh->prepare("SELECT tipo FROM usuarios WHERE ID = ?");
 $stmtTipoUsuario->execute([$idUsuario]);
 $tipoUsuario = $stmtTipoUsuario->fetchColumn();
 
-// Obtener la lista de todos los usuarios
-$stmt = $dbh->query("SELECT * FROM usuarios");
-$usuarios = $stmt->fetchAll(PDO::FETCH_ASSOC);
+// Obtener el total de usuarios
+$stmtTotalUsuarios = $dbh->query("SELECT COUNT(*) FROM usuarios");
+$totalUsuarios = $stmtTotalUsuarios->fetchColumn();
+
+// Obtener la lista de usuarios paginada
+$stmtUsuarios = $dbh->prepare("SELECT * FROM usuarios LIMIT $offset, $registrosPorPagina");
+$stmtUsuarios->execute();
+$usuarios = $stmtUsuarios->fetchAll(PDO::FETCH_ASSOC);
+
+// Calcular el número total de páginas
+$totalPaginas = ceil($totalUsuarios / $registrosPorPagina);
 ?>
 
 <!DOCTYPE html>
@@ -57,14 +70,34 @@ $usuarios = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         <td>
                             <?php if ($tipoUsuario == 1 || ($tipoUsuario == 0 && $idUsuario == $usuario['ID'])) { ?>
                                 <a href="editar_usuario.php?id=<?php echo $usuario['ID']; ?>">Editar</a> |
-                                <a href="eliminar_usuario.php?id=<?php echo $usuario['ID']; ?>" onclick="return confirm('¿Estás seguro?')">Eliminar</a> |
+                                <?php if ($tipoUsuario == 1 || $idUsuario == $usuario['ID']) { ?>
+                                    <a href="eliminar_usuario.php?id=<?php echo $usuario['ID']; ?>" onclick="return confirm('¿Estás seguro?')">Eliminar</a> |
                                 <?php } ?>
-                                <a href="detalles_usuario.php?id=<?php echo $usuario['ID']; ?>">Detalles</a>
+                            <?php } ?>
+                            <a href="detalles_usuario.php?id=<?php echo $usuario['ID']; ?>">Detalles</a>
                         </td>
                     </tr>
                 <?php } ?>
             </tbody>
         </table>
+
+        <!-- Paginación -->
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center">
+                <?php for ($i = 1; $i <= $totalPaginas; $i++) { ?>
+                    <li class="page-item <?php echo ($i == $paginaActual) ? 'active' : ''; ?>">
+                        <a class="page-link" href="?pagina=<?php echo $i; ?>"><?php echo $i; ?></a>
+                    </li>
+                <?php } ?>
+            </ul>
+        </nav>
+
+        <!-- Ir a página específica -->
+        <form class="form-inline float-right" action="" method="get">
+            <label class="mr-2" for="irAPagina">Ir a página:</label>
+            <input type="number" class="form-control mr-2" id="irAPagina" name="pagina" min="1" max="<?php echo $totalPaginas; ?>" value="<?php echo $paginaActual; ?>">
+            <button type="submit" class="btn btn-primary">Ir</button>
+        </form>
 
         <a href="index.php" class="btn btn-secondary mt-3">Inicio</a>
     </div>

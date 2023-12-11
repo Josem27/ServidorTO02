@@ -26,3 +26,4 @@ if ($_SERVER["REQUEST_METHOD"] == "GET") {
     header("Location: listado_entradas.php");
     exit();
 }
+?>

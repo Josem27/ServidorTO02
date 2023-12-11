@@ -38,15 +38,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 
     header("Location: listado_entradas.php");
-    // No es necesario exit() aquí
 } else {
-    // Obtener la entrada a editar
     $idEntrada = $_GET['id'];
     $stmt = $dbh->prepare("SELECT * FROM entradas WHERE ID = ?");
     $stmt->execute([$idEntrada]);
     $entrada = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    // Obtener la lista de categorías
     $stmtCategorias = $dbh->query("SELECT * FROM categorias");
     $categorias = $stmtCategorias->fetchAll(PDO::FETCH_ASSOC);
 }
@@ -54,11 +51,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <title>Editar Entrada</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 </head>
+
 <body>
     <div class="container mt-5">
         <h2 class="text-center mb-4">Editar Entrada</h2>
@@ -70,7 +69,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             </div>
             <div class="form-group">
                 <label for="nuevoContenido">Descripción:</label>
-                <textarea id="nuevoContenido" name="nuevoContenido" class="form-control" required><?php echo $entrada['DESCRIPCION']; ?></textarea>
+                <textarea id="nuevoContenido" name="nuevoContenido" class="form-control ckeditor" required><?php echo $entrada['DESCRIPCION']; ?></textarea>
             </div>
             <div class="form-group">
                 <label for="nuevaCategoria">Categoría:</label>
@@ -93,5 +92,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://cdn.ckeditor.com/4.16.2/standard/ckeditor.js"></script>
+    <script>
+        CKEDITOR.replace('nuevoContenido');
+    </script>
 </body>
+
 </html>

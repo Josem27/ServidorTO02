@@ -3,12 +3,18 @@ session_start();
 
 require_once 'config.php';
 
+$dbh = include 'config.php';
+
+if ($dbh === null) {
+    die("Error: La conexión a la base de datos es nula.");
+}
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $nombreCategoria = $_POST["txtnombreCategoria"];
 
     // Realiza el registro de la categoría
     try {
-        $stmt = $dbh->prepare("INSERT INTO Categorias (nombreCategoria) VALUES (?)");
+        $stmt = $dbh->prepare("INSERT INTO Categorias (NOMBRE) VALUES (?)");
         $stmt->execute([$nombreCategoria]);
 
         header("Location: index.php");
