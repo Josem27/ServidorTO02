@@ -41,6 +41,41 @@ if (!$entrada) {
     header("Location: listado_entradas.php");
     exit();
 }
+
+// Agregar el código para generar el PDF con TCPDF
+if (isset($_POST['generar_pdf'])) {
+    // Incluir los archivos de TCPDF localmente
+    require_once 'tcpdf/tcpdf.php';
+
+    // Crear una instancia de TCPDF
+    $pdf = new TCPDF();
+
+    // Establecer la ubicación de las fuentes de TCPDF
+    $fontPath = 'ruta/a/la/carpeta/fonts/';
+    TCPDF_FONTS::addTTFfont($fontPath . 'arial.ttf', 'TrueTypeUnicode', '', 32);
+
+    // Agregar contenido al PDF (ajusta según tus necesidades)
+    $pdf->AddPage();
+    $pdf->SetFont('times', 'B', 16);
+
+    // Resto del contenido del PDF
+    $pdf->Cell(0, 10, 'Detalles de Entrada', 0, 1, 'C');
+    $pdf->Cell(0, 10, 'Título: ' . $entrada['TITULO'], 0, 1);
+    $pdf->Cell(0, 10, 'Descripción: ' . $entrada['DESCRIPCION'], 0, 1);
+    $pdf->Cell(0, 10, 'Autor: ' . $autor, 0, 1);
+    $pdf->Cell(0, 10, 'Categoría: ' . $categoria, 0, 1);
+    $pdf->Cell(0, 10, 'Fecha de Creación: ' . $entrada['FECHA'], 0, 1);
+
+    // Agregar la imagen al PDF
+    if ($entrada['IMAGEN'] != null) {
+        $imagePath = $entrada['IMAGEN'];
+        $pdf->Image($imagePath, 10, 40, 90, 0, '', '', '', false, 300, '', false, false, 0);
+    }
+
+    // Salida del PDF
+    $pdf->Output('Detalles_de_Entrada.pdf', 'I');
+    exit();
+}
 ?>
 
 <!DOCTYPE html>
@@ -66,6 +101,10 @@ if (!$entrada) {
                 <p class="card-text"><strong>Fecha de Creación:</strong> <?php echo $entrada['FECHA']; ?></p>
             </div>
         </div>
+
+        <form method="post" class="mt-3">
+            <button type="submit" name="generar_pdf" class="btn btn-primary">Generar PDF</button>
+        </form>
 
         <a href="listado_entradas.php" class="btn btn-secondary mt-3">Volver al Listado</a>
     </div>

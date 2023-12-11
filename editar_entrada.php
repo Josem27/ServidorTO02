@@ -29,7 +29,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if ($_FILES["nuevaImagen"]["size"] > 0) {
         $imagen = $_FILES["nuevaImagen"]["name"];
         $imagen_temporal = $_FILES["nuevaImagen"]["tmp_name"];
-        $ruta = "uploads/" . $imagen;
+        $ruta = "images/" . $imagen;
         move_uploaded_file($imagen_temporal, $ruta);
 
         // Actualizar la ruta de la imagen en la base de datos
