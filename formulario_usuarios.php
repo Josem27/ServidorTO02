@@ -3,17 +3,33 @@ session_start();
 
 require_once 'config.php';
 
+$dbh = include 'config.php';
+
+if ($dbh === null) {
+    die("Error: La conexión a la base de datos es nula.");
+}
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $nombre = $_POST["txtnombre"];
-    $correo = $_POST["txtcorreo"];
-    $password = password_hash($_POST["txtpassword"], PASSWORD_DEFAULT);
+    $nick = $_POST["nick"];
+    $nombre = $_POST["nombre"];
+    $apellidos = $_POST["apellidos"];
+    $email = $_POST["email"];
+    $password = $_POST["password"];
+    $tipo = 0;
 
-    // Realiza el registro de usuarios
+    // Obtener la imagen
+    $imagen = $_FILES["imagen"]["name"];
+    $imagen_temporal = $_FILES["imagen"]["tmp_name"];
+    $ruta = "uploads/" . $imagen;
+
+    // Mover la imagen a la carpeta de uploads
+    move_uploaded_file($imagen_temporal, $ruta);
+
+    // Realizar el registro del usuario
     try {
-        $stmt = $dbh->prepare("INSERT INTO Usuarios (nombreUsuario, correoUsuario, contrasenaUsuario) VALUES (?, ?, ?)");
-        $stmt->execute([$nombre, $correo, $password]);
+        $stmt = $dbh->prepare("INSERT INTO usuarios (NICK, NOMBRE, APELLIDOS, EMAIL, PASSWORD, IMAGEN_AVATAR, tipo) VALUES (?, ?, ?, ?, ?, ?, ?)");
+        $stmt->execute([$nick, $nombre, $apellidos, $email, $password, $ruta, $tipo]);
 
-        $_SESSION["idUsuario"] = $dbh->lastInsertId(); // Obtiene el ID del usuario recién registrado
         header("Location: index.php");
         exit();
     } catch (PDOException $ex) {
@@ -37,21 +53,36 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <h2 class="text-center mb-4">Registro de Usuario</h2>
                 <form method="post" action="" enctype="multipart/form-data">
                     <div class="form-group">
-                        <label for="txtnombre">Nombre:</label>
-                        <input type="text" id="txtnombre" name="txtnombre" class="form-control" required>
+                        <label for="nick">Nick:</label>
+                        <input type="text" id="nick" name="nick" class="form-control" required>
                     </div>
 
                     <div class="form-group">
-                        <label for="txtcorreo">Correo Electrónico:</label>
-                        <input type="text" id="txtcorreo" name="txtcorreo" class="form-control" required>
+                        <label for="nombre">Nombre:</label>
+                        <input type="text" id="nombre" name="nombre" class="form-control" required>
                     </div>
 
                     <div class="form-group">
-                        <label for="txtpassword">Contraseña:</label>
-                        <input type="password" id="txtpassword" name="txtpassword" class="form-control" required>
+                        <label for="apellidos">Apellidos:</label>
+                        <input type="text" id="apellidos" name="apellidos" class="form-control" required>
                     </div>
 
-                    <button type="submit" class="btn btn-primary btn-block">Registrarse</button>
+                    <div class="form-group">
+                        <label for="email">Email:</label>
+                        <input type="email" id="email" name="email" class="form-control" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password">Contraseña:</label>
+                        <input type="password" id="password" name="password" class="form-control" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="imagen">Imagen Avatar:</label>
+                        <input type="file" id="imagen" name="imagen" class="form-control-file" accept="image/*">
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-block">Registrar Usuario</button>
                 </form>
 
                 <?php if (isset($error)) { ?>

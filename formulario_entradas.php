@@ -16,14 +16,13 @@ if ($dbh === null) {
 }
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    // Obtener el ID del usuario actualmente logueado
+    $idUsuario = $_SESSION["ID"];
     $titulo = $_POST["txttitulo"];
     $contenido = $_POST["txtcontenido"];
     $categoriaId = $_POST["categoria"];
     
-    // Obtener el ID del usuario actualmente logueado
-    $idUsuario = $_SESSION["id"];
-
-    // Obtener la imagen
+        // Obtener la imagen
     $imagen = $_FILES["imagen"]["name"];
     $imagen_temporal = $_FILES["imagen"]["tmp_name"];
     $ruta = "uploads/" . $imagen;
