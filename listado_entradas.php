@@ -15,7 +15,13 @@ if ($dbh === null) {
     die("Error: La conexión a la base de datos es nula.");
 }
 
-// Obtener la lista de todas las entradas ordenadas por fecha de creación (más reciente a menos reciente)
+// Obtener el tipo de usuario actual
+$idUsuario = $_SESSION["ID"];
+$stmtTipoUsuario = $dbh->prepare("SELECT tipo FROM usuarios WHERE ID = ?");
+$stmtTipoUsuario->execute([$idUsuario]);
+$tipoUsuario = $stmtTipoUsuario->fetchColumn();
+
+// Obtener la lista de entradas
 $stmt = $dbh->query("SELECT entradas.*, categorias.NOMBRE AS NOMBRE_CATEGORIA, usuarios.NICK AS NICK_USUARIO
                     FROM entradas
                     LEFT JOIN categorias ON entradas.CATEGORIA_ID = categorias.ID
@@ -55,8 +61,10 @@ $entradas = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         <td><?php echo $entrada['NICK_USUARIO']; ?></td>
                         <td><?php echo $entrada['FECHA']; ?></td>
                         <td>
-                            <a href="editar_entrada.php?id=<?php echo $entrada['ID']; ?>">Editar</a> |
-                            <a href="eliminar_entrada.php?id=<?php echo $entrada['ID']; ?>" onclick="return confirm('¿Estás seguro?')">Eliminar</a> |
+                            <?php if ($tipoUsuario == 1 || ($tipoUsuario == 0 && $idUsuario == $entrada['USUARIO_ID'])) { ?>
+                                <a href="editar_entrada.php?id=<?php echo $entrada['ID']; ?>">Editar</a> |
+                                <a href="eliminar_entrada.php?id=<?php echo $entrada['ID']; ?>" onclick="return confirm('¿Estás seguro?')">Eliminar</a> |
+                            <?php } ?>
                             <a href="detalles_entrada.php?id=<?php echo $entrada['ID']; ?>">Detalles</a>
                         </td>
                     </tr>

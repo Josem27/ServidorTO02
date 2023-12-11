@@ -15,6 +15,12 @@ if ($dbh === null) {
     die("Error: La conexión a la base de datos es nula.");
 }
 
+// Obtener el tipo de usuario actual
+$idUsuario = $_SESSION["ID"];
+$stmtTipoUsuario = $dbh->prepare("SELECT tipo FROM usuarios WHERE ID = ?");
+$stmtTipoUsuario->execute([$idUsuario]);
+$tipoUsuario = $stmtTipoUsuario->fetchColumn();
+
 // Obtener la lista de todos los usuarios
 $stmt = $dbh->query("SELECT * FROM usuarios");
 $usuarios = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -49,9 +55,11 @@ $usuarios = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         <td><?php echo $usuario['APELLIDOS']; ?></td>
                         <td><?php echo $usuario['EMAIL']; ?></td>
                         <td>
-                            <a href="editar_usuario.php?id=<?php echo $usuario['ID']; ?>">Editar</a> |
-                            <a href="eliminar_usuario.php?id=<?php echo $usuario['ID']; ?>" onclick="return confirm('¿Estás seguro?')">Eliminar</a> |
-                            <a href="detalles_usuario.php?id=<?php echo $usuario['ID']; ?>">Detalles</a>
+                            <?php if ($tipoUsuario == 1 || ($tipoUsuario == 0 && $idUsuario == $usuario['ID'])) { ?>
+                                <a href="editar_usuario.php?id=<?php echo $usuario['ID']; ?>">Editar</a> |
+                                <a href="eliminar_usuario.php?id=<?php echo $usuario['ID']; ?>" onclick="return confirm('¿Estás seguro?')">Eliminar</a> |
+                                <?php } ?>
+                                <a href="detalles_usuario.php?id=<?php echo $usuario['ID']; ?>">Detalles</a>
                         </td>
                     </tr>
                 <?php } ?>
