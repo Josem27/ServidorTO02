@@ -31,11 +31,13 @@ $stmtTotalEntradas = $dbh->query("SELECT COUNT(*) FROM entradas");
 $totalEntradas = $stmtTotalEntradas->fetchColumn();
 
 // Obtener la lista de entradas paginada
+$direccion = isset($_GET['dir']) ? $_GET['dir'] : 'desc';
+
 $stmtEntradas = $dbh->prepare("SELECT entradas.*, categorias.NOMBRE AS NOMBRE_CATEGORIA, usuarios.NICK AS NICK_USUARIO
                     FROM entradas
                     LEFT JOIN categorias ON entradas.CATEGORIA_ID = categorias.ID
                     LEFT JOIN usuarios ON entradas.USUARIO_ID = usuarios.ID
-                    ORDER BY entradas.FECHA DESC
+                    ORDER BY FECHA $direccion
                     LIMIT $offset, $registrosPorPagina");
 $stmtEntradas->execute();
 $entradas = $stmtEntradas->fetchAll(PDO::FETCH_ASSOC);
@@ -64,7 +66,7 @@ $totalPaginas = ceil($totalEntradas / $registrosPorPagina);
                     <th>Contenido</th>
                     <th>Categoría</th>
                     <th>Autor</th>
-                    <th>Fecha de Creación</th>
+                    <th><a href="?dir=<?php echo ($direccion === 'asc') ? 'desc' : 'asc'; ?>">Fecha de Creación <?php echo ($direccion === 'asc') ? '▲' : '▼'; ?></a></th>
                     <th>Operaciones</th>
                 </tr>
             </thead>
@@ -115,7 +117,6 @@ $totalPaginas = ceil($totalEntradas / $registrosPorPagina);
             <input type="number" class="form-control mr-2" id="irAPagina" name="pagina" min="1" max="<?php echo $totalPaginas; ?>" value="<?php echo $paginaActual; ?>">
             <button type="submit" class="btn btn-primary">Ir</button>
         </form>
-
 
         <a href="index.php" class="btn btn-secondary mt-3">Inicio</a>
     </div>
