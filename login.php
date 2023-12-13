@@ -3,9 +3,8 @@ session_start();
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $NICK = $_POST["Nick"];
-    $PASSWORD = $_POST["$PASSWORD"];
+    $PASSWORD = $_POST["PASSWORD"];
 
-    // Realiza la autenticación (en un entorno real, utiliza funciones de hash y verifica la contraseña correctamente)
     require_once 'config.php';
 
     $dbh = include 'config.php';
@@ -18,7 +17,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $stmt->execute([$NICK]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    if ($user && $PASSWORD === $user['$PASSWORD']) {
+    if ($user && $PASSWORD === $user['PASSWORD']) {
         $_SESSION["ID"] = $user['ID'];
         header("Location: index.php");
         exit();
@@ -48,8 +47,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     </div>
 
                     <div class="form-group">
-                        <label for="$PASSWORD">Contraseña:</label>
-                        <input type="password" id="$PASSWORD" name="$PASSWORD" class="form-control" required>
+                        <label for="PASSWORD">Contraseña:</label> <!-- Corregir el nombre del campo de contraseña -->
+                        <input type="password" id="PASSWORD" name="PASSWORD" class="form-control" required>
                     </div>
 
                     <button type="submit" class="btn btn-primary btn-block">Iniciar sesión</button>
